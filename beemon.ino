@@ -1,13 +1,13 @@
-#include <ESP8266WiFi.h>
 #include <DHT.h>
+#include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <HX711.h>
 #include <LiquidCrystal_I2C.h>
-#include <DallasTemperature.h>
 
 // Settings
 #define LCD_SCREEN 1
 #define WEB_SERVER 1
+#define TEST_MODE 0
 const int DEEP_SLEEP_TIME_SEC = 30;
 
 // Web server
@@ -219,11 +219,26 @@ void setup()
   webOut(weight, temp, humidity, voltage);
   #endif
 
-  // Wait 5 seconds and go to deep sleep
+  // Wait 5 seconds and go to deep sleep if not in test mode
+  #ifndef TEST_MODE
   delay(5000);
   turnOffPeripherals();
+  #endif
 }
 
 void loop() 
 {
+  #ifdef TEST_MODE
+  delay(5000);
+  float voltage = getBattery();
+  float temp = getTemp();
+  float humidity = getHumidity();
+  float weight = getWeight();
+  #ifdef LCD_SCREEN
+  lcdOut(weight, temp, humidity, voltage);
+  #endif
+  #ifdef WEB_SERVER
+  webOut(weight, temp, humidity, voltage);
+  #endif
+  #endif
 }
