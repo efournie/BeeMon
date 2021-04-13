@@ -7,6 +7,7 @@
 // Settings
 #define LCD_SCREEN 1
 #define WEB_SERVER 1
+#define DEEP_SLEEP 1
 
 // Web server
 String wifi_ssid = "wifi_ssid";
@@ -111,11 +112,17 @@ void turnOnPeripherals()
   lcd.init();   // initializing the LCD
   lcd.backlight();
   #endif
+  #ifdef DEEP_SLEEP
+  ESP.deepSleep(0);
+  #endif
 }
 
 void setup() 
 {
   Serial.begin(115200);
+  Serial.setTimeout(2000);
+  // Wait for serial to initialize.
+  while(!Serial) { }
   pinMode(BATTERY_PIN, INPUT);
   turnOnPeripherals();
 }
