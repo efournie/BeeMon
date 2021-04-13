@@ -7,7 +7,7 @@
 // Settings
 #define LCD_SCREEN 1
 #define WEB_SERVER 1
-#define DEEP_SLEEP 1
+const int DEEP_SLEEP_TIME_SEC = 30;
 
 // Web server
 String wifi_ssid = "wifi_ssid";
@@ -33,11 +33,40 @@ DHT dht(DHT2PIN, DHT2TYPE);
 // LCD
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
+
+///
+/// Peripherals on / off
+///
+
+void turnOnPeripherals()
+{
+  dht.begin(); // initialize dht22
+  scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
+  scale.set_scale(-6000/0.128);
+  scale.power_up();
+  #ifdef LCD_SCREEN
+  lcd.init();   // initializing the LCD
+  lcd.backlight();
+  #endif
+}
+
+void turnOffPeripherals()
+{
+  scale.power_down();
+  Serial.flush();
+  ESP.deepSleep(DEEP_SLEEP_TIME_SEC * 1e6, WAKE_RFCAL);
+}
+
 float getBattery()
 {
    float volt = analogRead(BATTERY_PIN);
    return volt/233.8;
 }
+
+
+///
+/// Sensors reading
+///
 
 float getTemp()
 {
@@ -84,6 +113,11 @@ float getWeight()
   return weight;
 }
 
+
+///
+/// Publish results
+///
+
 void lcdOut(float weight, float temp, float humidity, float voltage)
 {
   String line1=String(weight, 1) + "kg   " + String(temp, 1)+"C";
@@ -94,42 +128,27 @@ void lcdOut(float weight, float temp, float humidity, float voltage)
   lcd.print(line2);
 }
 
-void turnOffPeripherals()
+void webOut(float weight, float temp, float humidity, float voltage)
 {
-  scale.power_down();
-  #ifdef LCD_SCREEN
-  // TODO : turn off or freeze LCD screen
-  #endif
+  // TODO
 }
 
-void turnOnPeripherals()
-{
-  dht.begin(); // initialize dht22
-  scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
-  scale.set_scale(-6000/0.128);
-  scale.power_up();
-  #ifdef LCD_SCREEN
-  lcd.init();   // initializing the LCD
-  lcd.backlight();
-  #endif
-  #ifdef DEEP_SLEEP
-  ESP.deepSleep(0);
-  #endif
-}
 
+///
+/// Setup and main loop
+///
 void setup() 
 {
+  //  Initialize everything
   Serial.begin(115200);
   Serial.setTimeout(2000);
   // Wait for serial to initialize.
   while(!Serial) { }
   pinMode(BATTERY_PIN, INPUT);
   turnOnPeripherals();
-}
 
-void loop() 
-{
-  delay(4000);
+  // Wait 5 seconds, read sensors and publish results to LCD and/or web server
+  delay(5000);
   float voltage = getBattery();
   float temp = getTemp();
   float humidity = getHumidity();
@@ -137,14 +156,15 @@ void loop()
   #ifdef LCD_SCREEN
   lcdOut(weight, temp, humidity, voltage);
   #endif
-  
   #ifdef WEB_SERVER
-  // TODO : POST values to server
+  webOut(weight, temp, humidity, voltage);
   #endif
 
-  #ifndef LCD_SCREEN
-  // TODO : deep sleep if no LCD screen
+  // Wait 5 seconds and go to deep sleep
+  delay(5000);
   turnOffPeripherals();
-  #endif
+}
 
+void loop() 
+{
 }
