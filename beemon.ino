@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <DHT.h>
+#include <ESP8266HTTPClient.h>
 #include <HX711.h>
 #include <LiquidCrystal_I2C.h>
 #include <DallasTemperature.h>
@@ -10,12 +11,13 @@
 const int DEEP_SLEEP_TIME_SEC = 30;
 
 // Web server
-String wifi_ssid = "wifi_ssid";
-String wifi_password = "wifi_password";
+const char *ssid = "wifi_ssid";
+const char *password = "wifi_password";
 String webserver = "192.168.1.100:1974";
 String weburi_temp = "/store_hive_temp.php";
 String weburi_humidity = "/store_hive_humidity.php";
 String weburi_weight = "/store_hive_weight.php";
+String weburi_battery = "/store_hive_battery.php";
 
 // Weight sensor
 const int SCALE_DOUT_PIN = 14;  // = D5
@@ -40,14 +42,30 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 void turnOnPeripherals()
 {
+  #ifdef LCD_SCREEN
+  lcd.init();   // initializing the LCD
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("BeeMon");
+  lcd.setCursor(0, 1);
+  lcd.print("...startup...");
+  #endif
+  #ifdef WEB_SERVER
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
+  #endif
   dht.begin(); // initialize dht22
   scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
   scale.set_scale(-6000/0.128);
   scale.power_up();
-  #ifdef LCD_SCREEN
-  lcd.init();   // initializing the LCD
-  lcd.backlight();
-  #endif
 }
 
 void turnOffPeripherals()
@@ -130,7 +148,48 @@ void lcdOut(float weight, float temp, float humidity, float voltage)
 
 void webOut(float weight, float temp, float humidity, float voltage)
 {
-  // TODO
+  String serverTemp = webserver + weburi_temp;
+  String serverHumidity = webserver + weburi_humidity;
+  String serverWeight = webserver + weburi_weight;
+  String serverBattery = webserver + weburi_battery;
+
+  postReading(serverTemp, "?temp_sensor=" + String(temp, 1));
+  postReading(serverHumidity, "?humidity_sensor=" + String(humidity, 1));
+  postReading(serverWeight, "?weight_sensor=" + String(weight, 1));
+  postReading(serverBattery, "?battery=" + String(voltage, 1));
+}
+
+void postReading(String server, String data)
+{
+  Serial.println("Posting to " + server + "...");
+  if(WiFi.status()== WL_CONNECTED)
+  {
+    HTTPClient http;
+    String url = "http://" + server;
+    http.begin(url.c_str());
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int httpResponseCode = http.POST(data);
+    String payload = http.getString();
+    Serial.println("httpCode: " + httpResponseCode);    // success = 200
+    Serial.println("response: " + payload);
+    if (httpResponseCode > 0)
+    {
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+      String payload = http.getString();
+      Serial.println(payload);
+    }
+    else
+    {
+      Serial.print("Error code: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+      }
+  else
+  {
+    Serial.println("WiFi Disconnected");
+  }
 }
 
 
