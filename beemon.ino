@@ -231,9 +231,13 @@ void loop()
   #ifdef TEST_MODE
   delay(5000);
   float voltage = getBattery();
+  Serial.println("Battery: " + String(voltage, 2));
   float temp = getTemp();
+  Serial.println("Temperature: " + String(temp, 2));
   float humidity = getHumidity();
+  Serial.println("Humidity: " + String(humidity, 2));
   float weight = getWeight();
+  Serial.println("Weight: " + String(weight, 2));
   #ifdef LCD_SCREEN
   lcdOut(weight, temp, humidity, voltage);
   #endif
