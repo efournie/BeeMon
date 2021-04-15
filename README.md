@@ -11,7 +11,7 @@ It can send the measured values to a remote HTTP server where the data can be pr
 
 In order to be used without a web server in WiFi range, the measured values can also be displayed on a 2x 16 characters LCD screen connected to the ESP8266 via an I2C adapter. 
 
-In normal mode, the system measures the data, sends them to the web server and/or LCD screen and go to deep sleep for 30 minutes. A switch controlling a pulldown resistor connected to the D0 and RST pins is present on the schematic. Pushing the switch will wake up the ESP8266 if it is in deep sleep mode and measure and publish the monitored values.
+In normal mode, the system measures the data, sends them to the web server and/or LCD screen and go to deep sleep for 30 minutes. While in deep sleep, the LCD screen remains on, which of course will consume current. A switch betweek the RST pin and GND is present on the schematic. Pushing the switch will wake up the ESP8266 if it is in deep sleep mode and measure and publish the monitored values.
 
 KiCad schematics and some custom KiCad components are included. 
 
@@ -46,3 +46,8 @@ The total price of the system was around 45€. Buying several items at once in 
 ## Schematics
 
 ![alt text](schematic.png "System schematics")
+
+## LCD Display
+
+The measured values are displayed on the LCD screen.
+A "w" on the top right corner means WiFi is connected. A "z" in the lowest right corner means the ESP8266 is in deep sleep mode. In this case, it can be awaken with the switch.
