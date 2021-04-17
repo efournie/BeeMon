@@ -8,19 +8,19 @@
 const int LCD_SCREEN = 1;
 const int WEB_SERVER = 1;
 const int TEST_MODE = 0;
-const int DEEP_SLEEP_TIME_SEC = 1800;
-const int WIFI_INIT_MAX_SEC = 5;
+const int DEEP_SLEEP_TIME_SEC = 600;
+const int WIFI_INIT_MAX_SEC = 15;
 
 // Web server
-const char *ssid = "dd-wrt";
-const char *password = "classyunicorn377";
+const char *ssid = "ssid";
+const char *password = "password";
 
 const int SCALE_DOUT_PIN = 14;  // = D5
 const int SCALE_SCK_PIN = 12;   // = D6
 const int DHT2PIN = 13;         // = D7
 const int BATTERY_PIN = A0;
-const float SCALE_CALIBRATION_FACTOR = 47.905;
-const int SCALE_CALIBRATION_OFFSET = 199725;
+const float SCALE_CALIBRATION_FACTOR = 470.7354;
+const int SCALE_CALIBRATION_OFFSET = -359024;
 
 HX711 scale;
 DHT dht(DHT2PIN, DHT22);
@@ -116,8 +116,8 @@ void turnOnPeripherals()
   }
   Serial.println("Weight sensors initialization...");
   scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
-  scale.set_offset(SCALE_CALIBRATION_OFFSET);
-  scale.set_scale(SCALE_CALIBRATION_FACTOR);
+  scale.set_offset(0);
+  scale.set_scale(1);
   scale.power_up();
   if (LCD_SCREEN)
   {
@@ -193,7 +193,9 @@ float getWeight()
   float weight;
   if (scale.is_ready()) 
   {
-    weight = scale.get_units(4);
+    float sensor = scale.get_units(4);
+    weight = -(sensor - SCALE_CALIBRATION_OFFSET) / SCALE_CALIBRATION_FACTOR;
+    Serial.println("HX711: sensor=" + String(sensor) + " -> weight=" + String(weight,2) + "kg");
   } else {
     Serial.println("HX711 not found.");
     weight = 0.0;
@@ -209,7 +211,7 @@ float getWeight()
 void lcdOut(float weight, float temp, float humidity, float voltage)
 {
   String line1=String(weight, 1) + "kg  " + String(temp, 1)+"C";
-  String line2=String(humidity, 1) + "%  " + String(voltage, 1) + "V";
+  String line2=String(humidity, 1) + "%  " + String(voltage, 2) + "V";
   clearLcd();
   lcd.setCursor(0, 0);
   lcd.print(line1);
@@ -226,7 +228,7 @@ void webOut(float weight, float temp, float humidity, float voltage)
   String weight_url = "http://192.168.1.100:1974/store_hive_weight.php";
   String weight_data = "weight_sensor=" + String(weight, 1);
   String battery_url = "http://192.168.1.100:1974/store_hive_battery.php";
-  String battery_data = "battery=" + String(voltage, 1);
+  String battery_data = "battery=" + String(voltage, 3);
 
   postReading(temperature_url, temperature_data);
   postReading(humidity_url, humidity_data);
@@ -276,6 +278,5 @@ void loop()
     float weight = getWeight();
     Serial.println("Weight: " + String(weight, 2) + "kg");
     if(LCD_SCREEN) lcdOut(weight, temp, humidity, voltage);
-    if(WEB_SERVER) webOut(weight, temp, humidity, voltage);
   }
 }
