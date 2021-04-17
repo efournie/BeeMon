@@ -42,6 +42,8 @@ Somehow, using the ESP8266 3V pins to power the HX711 and the DHT22 doesn't work
 
 The 18650 voltage is measured on the A0 pin. Either the voltage is too high for this, or it does not vary much with time, as it tends to stay on 4.4V. Adding a resistor between BAT+ and A0 may be better.
 
+The load cells are placed in a Wheatstone bridge configuration.
+
 Once built, the system sends logs to the serial output via the ESP8266 USB port if connected to a computer. This can be useful to check for errors.
 
 ![alt text](board.png "Finished board")
@@ -55,10 +57,7 @@ Once built, the system sends logs to the serial output via the ESP8266 USB port 
 - TEST_MODE can be set to 1 to update the screen and serial output every 5 seconds.
 
 You will need to calibrate the system according to your weight sensors and construction. For this, you can compile the software in test mode and leave an heavy object whose weight is known on your load cells until the measured weight stabilizes. 
-Once stabilized, you can adapt the factor on this line:
-```
-scale.set_scale(-6000/0.128);
-```
+Once stabilized, you can adapt the offset (SCALE_CALIBRATION_OFFSET) and slope (SCALE_CALIBRATION_FACTOR). 
 
 ## LCD Display
 
