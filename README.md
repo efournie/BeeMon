@@ -2,6 +2,8 @@
 
 This is a cheap ESP8266 beehive monitoring system. The system is powered by a solar panel charging a 18650 battery.
 
+![alt text](setup.png "Weight sensor calibration")
+
 Monitored values are:
 - Temperature and humidity using a DHT22 sensor
 - Weight with an HX711 module and 4 half bridge strain gauges
@@ -14,21 +16,6 @@ In order to be used without a web server in WiFi range, the measured values can 
 In normal mode, the system measures the data, sends them to the web server and/or LCD screen and go to deep sleep for 30 minutes. While in deep sleep, the LCD screen remains on, which of course will consume current. A switch betweek the RST pin and GND is present on the schematic. Pushing the switch will wake up the ESP8266 if it is in deep sleep mode and measure and publish the monitored values.
 
 KiCad schematics and some custom KiCad components are included. 
-
-
-## Configuration
-
-- Open beemon.ino using the Arduino IDE
-- In the Tools menu, set the board type according to the ESP8266 or Arduino model you are using.
-- You will need the following libraries (can be added in Tools -> Manage Libraries...): LiquidCrystal, DHT Sensor Library for ESPx, LiquidCrystal I2C, HX711 Arduino Library.
-- According to your hardware and the operation mode you want, set LCD_SCREEN and WEB_SERVER to 0 or 1
-- TEST_MODE can be set to 1 to update the screen and/or the web server every 5 seconds.
-
-You will need to calibrate the system according to your weight sensors and construction. For this, you can compile the software in test mode and leave an heavy object whose weight is known on your load cells until the measured weight stabilizes. 
-Once stabilized, you can adapt the factor on this line:
-```
-scale.set_scale(-6000/0.128);
-```
 
 ## Parts list
 
@@ -46,6 +33,32 @@ The total price of the system was around 45€. Buying several items at once in 
 ## Schematics
 
 ![alt text](schematic.png "System schematics")
+
+## Realisation
+
+The system can either be built on a breadboard or soldered on a small board. For long time use outdoor, a breadboard is probably not well-suited.
+
+Somehow, using the ESP8266 3V pins to power the HX711 and the DHT22 doesn't work, probably because the 18650 output is not sufficient. It's better to use the AMS117 3V output for this.
+
+The 18650 voltage is measured on the A0 pin. Either the voltage is too high for this, or it does not vary much with time, as it tends to stay on 4.4V. Adding a resistor between BAT+ and A0 may be better.
+
+Once built, the system sends logs to the serial output via the ESP8266 USB port if connected to a computer. This can be useful to check for errors.
+
+![alt text](board.png "Finished board")
+
+## Configuration
+
+- Open beemon.ino using the Arduino IDE
+- In the Tools menu, set the board type according to the ESP8266 or Arduino model you are using.
+- You will need the following libraries (can be added in Tools -> Manage Libraries...): LiquidCrystal, DHT Sensor Library for ESPx, LiquidCrystal I2C, HX711 Arduino Library.
+- According to your hardware and the operation mode you want, set LCD_SCREEN and WEB_SERVER to 0 or 1
+- TEST_MODE can be set to 1 to update the screen and serial output every 5 seconds.
+
+You will need to calibrate the system according to your weight sensors and construction. For this, you can compile the software in test mode and leave an heavy object whose weight is known on your load cells until the measured weight stabilizes. 
+Once stabilized, you can adapt the factor on this line:
+```
+scale.set_scale(-6000/0.128);
+```
 
 ## LCD Display
 
