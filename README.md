@@ -59,7 +59,17 @@ Once built, the system sends logs to the serial output via the ESP8266 USB port 
 You will need to calibrate the system according to your weight sensors and construction. For this, you can compile the software in test mode and leave an heavy object whose weight is known on your load cells until the measured weight stabilizes. 
 Once stabilized, you can adapt the offset (SCALE_CALIBRATION_OFFSET) and slope (SCALE_CALIBRATION_FACTOR). 
 
+## Weight Measurements Variations
+
+A clean positioning of the weight sensors, with cables as short as possible is primordial to get meaningful readings. My first installation was connected to the load cells cables (30-40cm) with a plug and another 60cm cable to the HX711 that was soldered to the main board, while the cables connecting the cells together were much too long and tangled.
+
+With this configuration, I had up to 30kg variation at several moments of the day. Those variations were correlated to the temperature, but not enough to correct them. A fifth load cell connected to the B channel of the HX711 also proved inefficient to get stable readings.
+
+Only after fixing the cells to a rigid board and connecting them together with as short as possible cables and moving the HX711 in the middle of the cells with clean cable paths did I get very stable readings.
+
+![alt text](weight_sensors.png "Weight sensors board")
+
 ## LCD Display
 
 The measured values are displayed on the LCD screen.
-A "w" on the top right corner means WiFi is connected. A "z" in the lowest right corner means the ESP8266 is in deep sleep mode. In this case, it can be awaken with the switch.
+A "w" on the top right corner means WiFi is connected. A "z" in the lowest right corner means the ESP8266 is in deep sleep mode. In this case, it can be awaken with the switch. Removing the LCD backlight jumper will reduce the current consumption but make the display difficult to read.

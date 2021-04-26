@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "BeeMon"
 Date "2021-04-13"
-Rev "1.0"
+Rev "1.1"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -148,8 +148,6 @@ Wire Wire Line
 Wire Wire Line
 	3350 3850 3850 3850
 Wire Wire Line
-	3850 3850 3850 4750
-Wire Wire Line
 	3850 4850 5000 4850
 Connection ~ 3850 3850
 Wire Wire Line
@@ -230,8 +228,6 @@ Wire Wire Line
 Wire Wire Line
 	8450 3900 8200 3900
 Wire Wire Line
-	9550 4300 8550 4300
-Wire Wire Line
 	8550 4300 8550 4200
 Wire Wire Line
 	8550 4200 8200 4200
@@ -265,8 +261,6 @@ NoConn ~ 6600 3950
 NoConn ~ 6600 4550
 NoConn ~ 6600 4650
 NoConn ~ 6600 4750
-NoConn ~ 8200 3700
-NoConn ~ 8200 3800
 Wire Wire Line
 	6600 3550 6700 3550
 Wire Wire Line
@@ -278,13 +272,13 @@ Wire Wire Line
 $Comp
 L Switch:SW_SPST SW1
 U 1 1 607C3174
-P 4450 4750
-F 0 "SW1" V 4496 4662 50  0000 R CNN
-F 1 "SW_SPST" V 4405 4662 50  0000 R CNN
-F 2 "" H 4450 4750 50  0001 C CNN
-F 3 "~" H 4450 4750 50  0001 C CNN
-	1    4450 4750
-	1    0    0    -1  
+P 4450 4300
+F 0 "SW1" V 4496 4212 50  0000 R CNN
+F 1 "SW_SPST" V 4405 4212 50  0000 R CNN
+F 2 "" H 4450 4300 50  0001 C CNN
+F 3 "~" H 4450 4300 50  0001 C CNN
+	1    4450 4300
+	0    -1   -1   0   
 $EndComp
 NoConn ~ 5800 2000
 NoConn ~ 5700 2000
@@ -373,11 +367,18 @@ Connection ~ 4750 3550
 Wire Wire Line
 	4750 3550 5000 3550
 Wire Wire Line
-	4850 4750 4650 4750
+	3850 3850 3850 4850
+Wire Wire Line
+	4850 4750 4450 4750
+Wire Wire Line
+	4450 4750 4450 4500
 Connection ~ 4850 4750
 Wire Wire Line
-	4250 4750 3850 4750
-Connection ~ 3850 4750
+	4450 4100 4450 3850
 Wire Wire Line
-	3850 4750 3850 4850
+	4450 3850 3850 3850
+Wire Wire Line
+	8550 4300 9550 4300
+NoConn ~ 8200 3700
+NoConn ~ 8200 3800
 $EndSCHEMATC

@@ -19,8 +19,9 @@ const int SCALE_DOUT_PIN = 14;  // = D5
 const int SCALE_SCK_PIN = 12;   // = D6
 const int DHT2PIN = 13;         // = D7
 const int BATTERY_PIN = A0;
-const float SCALE_CALIBRATION_FACTOR = 470.7354;
-const int SCALE_CALIBRATION_OFFSET = -359024;
+const long  SCALE_CALIBRATION_OFFSET  = -286526;
+const float SCALE_CALIBRATION_FACTOR  = 26069.07;
+long channelA;
 
 HX711 scale;
 DHT dht(DHT2PIN, DHT22);
@@ -107,6 +108,9 @@ void turnOnPeripherals()
     lcd.setCursor(5,1);
     lcd.print(".");
   }
+  scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
+  scale.power_up();
+  delay(2000); // After first powerup, the HX711 seems to need more time before being able to read values...
   Serial.println("Temperature and humidity sensor initialization...");
   dht.begin(); // initialize dht22
   if (LCD_SCREEN)
@@ -114,11 +118,6 @@ void turnOnPeripherals()
     lcd.setCursor(6,1);
     lcd.print(".");
   }
-  Serial.println("Weight sensors initialization...");
-  scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
-  scale.set_offset(0);
-  scale.set_scale(1);
-  scale.power_up();
   if (LCD_SCREEN)
   {
     lcd.setCursor(7,1);
@@ -160,11 +159,7 @@ float getBattery()
 
 float getTemp()
 {
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  // Read temperature as Celsius
   float temp = dht.readTemperature();
-  // Check if any reads failed and exit early (to try again).
   if (isnan(temp) || (temp < -30.0) || (temp > 60.0))
   {
     Serial.println("DHT22 reading seems wrong!");
@@ -175,11 +170,7 @@ float getTemp()
   
 float getHumidity()
 {
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  // Read humidity
   float humidity = dht.readHumidity();
-  // Check if any reads failed and exit early (to try again).
   if (isnan(humidity) || (humidity < 0.0) || (humidity > 100.0))
   {
     Serial.println("DHT22 reading seems wrong!");
@@ -193,13 +184,14 @@ float getWeight()
   float weight;
   if (scale.is_ready()) 
   {
-    float sensor = scale.get_units(4);
-    weight = -(sensor - SCALE_CALIBRATION_OFFSET) / SCALE_CALIBRATION_FACTOR;
-    Serial.println("HX711: sensor=" + String(sensor) + " -> weight=" + String(weight,2) + "kg");
+    scale.read();
+    channelA = scale.read_average(3);
+    Serial.println("HX711: channel A: " + String((float)channelA));
   } else {
     Serial.println("HX711 not found.");
     weight = 0.0;
   }
+  weight = (channelA - SCALE_CALIBRATION_OFFSET) / SCALE_CALIBRATION_FACTOR;
   return weight;
 }
 
@@ -226,14 +218,17 @@ void webOut(float weight, float temp, float humidity, float voltage)
   String humidity_url = "http://192.168.1.100:1974/store_hive_humidity.php";
   String humidity_data = "humidity_sensor=" + String(humidity, 1);
   String weight_url = "http://192.168.1.100:1974/store_hive_weight.php";
-  String weight_data = "weight_sensor=" + String(weight, 1);
+  String weight_data = "weight_sensor=" + String(weight, 3);
   String battery_url = "http://192.168.1.100:1974/store_hive_battery.php";
   String battery_data = "battery=" + String(voltage, 3);
+  String channela_url = "http://192.168.1.100:1974/store_hive_channela.php";
+  String channela_data = "channela=" + String((float)channelA, 1);
 
   postReading(temperature_url, temperature_data);
   postReading(humidity_url, humidity_data);
   postReading(weight_url, weight_data);
   postReading(battery_url, battery_data);
+  postReading(channela_url, channela_data);
 }
 
 void postReading(String url, String data)
@@ -269,14 +264,15 @@ void loop()
   if(TEST_MODE)
   {
     delay(5000);
+    float weight = getWeight();
+    Serial.println("Weight: " + String(weight, 2) + "kg");
     float voltage = getBattery();
     Serial.println("Battery: " + String(voltage, 2));
     float temp = getTemp();
     Serial.println("Temperature: " + String(temp, 2) + "C");
     float humidity = getHumidity();
     Serial.println("Humidity: " + String(humidity, 2) + "%");
-    float weight = getWeight();
-    Serial.println("Weight: " + String(weight, 2) + "kg");
     if(LCD_SCREEN) lcdOut(weight, temp, humidity, voltage);
+    webOut(weight, temp, humidity, voltage);
   }
 }
