@@ -19,14 +19,16 @@ KiCad schematics and some custom KiCad components are included.
 
 ## Parts list
 
-- NodeMCU Lolin V3 or any ESP8266 module with enough pins
+- NodeMCU Lolin V3 or any ESP8266 module with enough digital pins
 - AMS117 Step-Down Voltage regulator
 - HX711 module with 4 50kg half bridge strain gauges
 - DHT22 sensor
+- DS18B20 sensor
 - 6V / 2W solar panel
 - 18650 battery with corresponding holder
 - TP4056 charge controller
 - HD44780 1602 2x 16 characters LCD with I2C adapter
+- 1x 4.7kΩ and 1x 10kΩ resistors
 
 The total price of the system was around 45€. Buying several items at once in order to monitor multiple hives can  further reduce the price.
 
@@ -75,8 +77,8 @@ The values in the code compensate the Seebeck effect for my board but may need a
 
 ## LCD Display
 
-The measured values are displayed on the LCD screen.
-A "w" on the top right corner means WiFi is connected. A "z" in the lowest right corner means the ESP8266 is in deep sleep mode. In this case, it can be awaken with the switch. Removing the LCD backlight jumper will reduce the current consumption but make the display difficult to read.
+The measured values are displayed on the LCD screen. A "w" on the top right corner means WiFi is connected. A "z" in the lowest right corner means the ESP8266 is in deep sleep mode. In this case, it can be awaken with the switch. Removing the LCD backlight jumper will reduce the current consumption but make the display difficult to read. If not soldered, the screen can be completely unplugged to reduce even further the current consumption.
+
 
 ## Web Server
 
