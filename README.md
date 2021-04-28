@@ -52,7 +52,7 @@ Once built, the system sends logs to the serial output via the ESP8266 USB port 
 
 - Open beemon.ino using the Arduino IDE
 - In the Tools menu, set the board type according to the ESP8266 or Arduino model you are using.
-- You will need the following libraries (can be added in Tools -> Manage Libraries...): LiquidCrystal, DHT Sensor Library for ESPx, LiquidCrystal I2C, HX711 Arduino Library.
+- You will need the following libraries (can be added in Tools -> Manage Libraries...): LiquidCrystal, DHT Sensor Library for ESPx, LiquidCrystal I2C, HX711 Arduino Library, DallasTemperature, OneWire.
 - According to your hardware and the operation mode you want, set LCD_SCREEN and WEB_SERVER to 0 or 1
 - TEST_MODE can be set to 1 to update the screen and serial output every 5 seconds.
 
@@ -63,9 +63,13 @@ Once stabilized, you can adapt the offset (SCALE_CALIBRATION_OFFSET) and slope (
 
 A clean positioning of the weight sensors, with cables as short as possible is primordial to get meaningful readings. My first installation was connected to the load cells cables (30-40cm) with a plug and another 60cm cable to the HX711 that was soldered to the main board, while the cables connecting the cells together were much too long and tangled.
 
-With this configuration, I had up to 30kg variation at several moments of the day. Those variations were correlated to the temperature, but not enough to correct them. A fifth load cell connected to the B channel of the HX711 also proved inefficient to get stable readings.
+With this configuration, I had up to 30kg variation at several moments of the day. Part of those variations were correlated to the temperature, but the baseline was too noisy to be corrected. A fifth load cell connected to the B channel of the HX711 also proved inefficient to get stable readings.
 
-Only after fixing the cells to a rigid board and connecting them together with as short as possible cables and moving the HX711 in the middle of the cells with clean cable paths did I get very stable readings.
+Only after fixing the cells to a rigid board and connecting them together with as short as possible cables and moving the HX711 in the middle of the cells with clean cable paths did I get a clean baseline.
+
+In order to compensate the fluctuations correlated to the temperature (due to the [Seebeck effect](https://en.wikipedia.org/wiki/Thermoelectric_effect#Seebeck_effect)), a digital temperature sensor (DS18B20) is added to the board with a pullup resistor on its data pin.
+
+The values in the code compensate the Seebeck effect for my board but may need adjustment depending on the build and sensor.
 
 ![alt text](weight_sensors.png "Weight sensors board")
 
@@ -73,3 +77,7 @@ Only after fixing the cells to a rigid board and connecting them together with a
 
 The measured values are displayed on the LCD screen.
 A "w" on the top right corner means WiFi is connected. A "z" in the lowest right corner means the ESP8266 is in deep sleep mode. In this case, it can be awaken with the switch. Removing the LCD backlight jumper will reduce the current consumption but make the display difficult to read.
+
+## Web Server
+
+The software uses HTTP POST to send the measured values (including raw weight sensors readings to facilitate calibration) to a web server. This assumes an HTTP server running on the same subnet with a fixed IP address. 

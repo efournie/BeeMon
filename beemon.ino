@@ -3,6 +3,8 @@
 #include <ESP8266HTTPClient.h>
 #include <HX711.h>
 #include <LiquidCrystal_I2C.h>
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
 // Settings
 const int LCD_SCREEN = 1;
@@ -18,14 +20,17 @@ const char *password = "password";
 const int SCALE_DOUT_PIN = 14;  // = D5
 const int SCALE_SCK_PIN = 12;   // = D6
 const int DHT2PIN = 13;         // = D7
+const int EXT_TEMP_PIN = 2;     // = D4
 const int BATTERY_PIN = A0;
-const long  SCALE_CALIBRATION_OFFSET  = -286526;
-const float SCALE_CALIBRATION_FACTOR  = 26069.07;
+const long  SCALE_CALIBRATION_OFFSET  = -37;
+const float SCALE_CALIBRATION_FACTOR  = 7085;
 long channelA;
 
 HX711 scale;
 DHT dht(DHT2PIN, DHT22);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+OneWire oneWire(EXT_TEMP_PIN);
+DallasTemperature sensors(&oneWire);
 
 
 ///
@@ -48,12 +53,13 @@ void setup()
   float voltage = getBattery();
   float temp = getTemp();
   float humidity = getHumidity();
-  float weight = getWeight();
+  float extTemp = getExtTemp();
+  float weight = getWeight(extTemp);
 
   if(!TEST_MODE)
   {
     if(LCD_SCREEN) lcdOut(weight, temp, humidity, voltage);
-    if(WEB_SERVER) webOut(weight, temp, humidity, voltage);
+    if(WEB_SERVER) webOut(weight, temp, humidity, voltage, extTemp);
     delay(5000);
     turnOffPeripherals();
   }
@@ -90,9 +96,7 @@ void turnOnPeripherals()
     }
     if(wait_sec == WIFI_INIT_MAX_SEC)
     {
-      Serial.println("WiFi connection failed, last tentative...");
-      WiFi.begin(ssid, password);
-      delay(1000);
+      Serial.println("WiFi connection failed.");
     }
     if (WiFi.status() == WL_CONNECTED && LCD_SCREEN)
     {
@@ -118,6 +122,9 @@ void turnOnPeripherals()
     lcd.setCursor(6,1);
     lcd.print(".");
   }
+
+  Serial.println("External temperature sensor initialization...");
+
   if (LCD_SCREEN)
   {
     lcd.setCursor(7,1);
@@ -167,6 +174,13 @@ float getTemp()
   }
   return temp;
 }
+
+float getExtTemp()
+{
+  sensors.requestTemperatures(); 
+  float temperature = sensors.getTempCByIndex(0);
+  return temperature;
+}
   
 float getHumidity()
 {
@@ -179,7 +193,7 @@ float getHumidity()
   return humidity;
 }
   
-float getWeight()
+float getWeight(float extTemp)
 {
   float weight;
   if (scale.is_ready()) 
@@ -191,8 +205,10 @@ float getWeight()
     Serial.println("HX711 not found.");
     weight = 0.0;
   }
-  weight = (channelA - SCALE_CALIBRATION_OFFSET) / SCALE_CALIBRATION_FACTOR;
-  return weight;
+  weight = channelA / SCALE_CALIBRATION_FACTOR + SCALE_CALIBRATION_OFFSET;
+  float tempCorrection = -extTemp / 7.923 + 1.50;
+  Serial.println("External temperature is " + String(extTemp,3) + ", correcting W=" + String(weight, 3) + " by " + String(tempCorrection, 3) + "kg");
+  return weight + tempCorrection;
 }
 
 
@@ -211,7 +227,7 @@ void lcdOut(float weight, float temp, float humidity, float voltage)
   lcd.print(line2);
 }
 
-void webOut(float weight, float temp, float humidity, float voltage)
+void webOut(float weight, float temp, float humidity, float voltage, float extTemp)
 {
   String temperature_url = "http://192.168.1.100:1974/store_hive_temp.php";
   String temperature_data = "temp_sensor=" + String(temp, 1);
@@ -223,12 +239,15 @@ void webOut(float weight, float temp, float humidity, float voltage)
   String battery_data = "battery=" + String(voltage, 3);
   String channela_url = "http://192.168.1.100:1974/store_hive_channela.php";
   String channela_data = "channela=" + String((float)channelA, 1);
+  String exttemp_url = "http://192.168.1.100:1974/store_hive_exttemp.php";
+  String exttemp_data = "temp_sensor=" + String((float)extTemp, 3);
 
   postReading(temperature_url, temperature_data);
   postReading(humidity_url, humidity_data);
   postReading(weight_url, weight_data);
   postReading(battery_url, battery_data);
   postReading(channela_url, channela_data);
+  postReading(exttemp_url, exttemp_data);
 }
 
 void postReading(String url, String data)
@@ -264,7 +283,9 @@ void loop()
   if(TEST_MODE)
   {
     delay(5000);
-    float weight = getWeight();
+    float extTemp = getExtTemp();
+    Serial.println("External (reference) temperature: " + String(extTemp, 2) + "C");
+    float weight = getWeight(extTemp);
     Serial.println("Weight: " + String(weight, 2) + "kg");
     float voltage = getBattery();
     Serial.println("Battery: " + String(voltage, 2));
@@ -273,6 +294,6 @@ void loop()
     float humidity = getHumidity();
     Serial.println("Humidity: " + String(humidity, 2) + "%");
     if(LCD_SCREEN) lcdOut(weight, temp, humidity, voltage);
-    webOut(weight, temp, humidity, voltage);
+    webOut(weight, temp, humidity, voltage, extTemp);
   }
 }

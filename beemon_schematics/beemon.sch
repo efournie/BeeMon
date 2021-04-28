@@ -257,7 +257,6 @@ NoConn ~ 5000 4450
 NoConn ~ 5000 4550
 NoConn ~ 5000 4650
 NoConn ~ 6600 3850
-NoConn ~ 6600 3950
 NoConn ~ 6600 4550
 NoConn ~ 6600 4650
 NoConn ~ 6600 4750
@@ -381,4 +380,62 @@ Wire Wire Line
 	8550 4300 9550 4300
 NoConn ~ 8200 3700
 NoConn ~ 8200 3800
+$Comp
+L Sensor_Temperature:DS18B20 U6
+U 1 1 6089228E
+P 7900 1750
+F 0 "U6" V 7533 1750 50  0000 C CNN
+F 1 "DS18B20" V 7624 1750 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 6900 1500 50  0001 C CNN
+F 3 "http://datasheets.maximintegrated.com/en/ds/DS18B20.pdf" H 7750 2000 50  0001 C CNN
+	1    7900 1750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7600 1750 7050 1750
+Wire Wire Line
+	7050 1750 7050 2350
+Connection ~ 7050 2350
+Wire Wire Line
+	6600 4050 6900 4050
+Wire Wire Line
+	6900 4050 6900 3000
+Wire Wire Line
+	6600 3950 6750 3950
+Wire Wire Line
+	6750 3950 6750 3850
+Wire Wire Line
+	6750 3850 7150 3850
+Wire Wire Line
+	7150 3850 7150 2850
+Wire Wire Line
+	7150 2850 7900 2850
+Wire Wire Line
+	7900 2850 7900 2500
+Wire Wire Line
+	8400 3000 8400 2500
+Wire Wire Line
+	8400 1750 8200 1750
+Wire Wire Line
+	6900 3000 8400 3000
+$Comp
+L SparkFun-Resistors:4.7KOHM-0603-1_10W-1% R2
+U 1 1 608A5C7F
+P 8200 2500
+F 0 "R2" H 8200 2694 45  0000 C CNN
+F 1 "4.7KOHM" H 8200 2610 45  0000 C CNN
+F 2 "0603" H 8200 2650 20  0001 C CNN
+F 3 "" H 8200 2500 60  0001 C CNN
+F 4 "" H 8200 2621 60  0000 C CNN "Field4"
+	1    8200 2500
+	1    0    0    -1  
+$EndComp
+Connection ~ 8400 2500
+Wire Wire Line
+	8400 2500 8400 1750
+Wire Wire Line
+	8000 2500 7900 2500
+Connection ~ 7900 2500
+Wire Wire Line
+	7900 2500 7900 2050
 $EndSCHEMATC
