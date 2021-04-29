@@ -22,7 +22,7 @@ const int SCALE_SCK_PIN = 12;   // = D6
 const int DHT2PIN = 13;         // = D7
 const int EXT_TEMP_PIN = 2;     // = D4
 const int BATTERY_PIN = A0;
-const long  SCALE_CALIBRATION_OFFSET  = -37;
+const long  SCALE_CALIBRATION_OFFSET  = -29;
 const float SCALE_CALIBRATION_FACTOR  = 7085;
 long channelA;
 
@@ -205,10 +205,19 @@ float getWeight(float extTemp)
     Serial.println("HX711 not found.");
     weight = 0.0;
   }
-  weight = channelA / SCALE_CALIBRATION_FACTOR + SCALE_CALIBRATION_OFFSET;
-  float tempCorrection = -extTemp / 7.923 + 1.50;
+  float tempCorrection;
+  if(extTemp != -127)
+  {
+    tempCorrection = -extTemp * 3630.7;
+  }
+  else
+  {
+    // Reading error, let's assume 15C
+    tempCorrection = -54460.5;
+  }
+  weight = (channelA + tempCorrection) / SCALE_CALIBRATION_FACTOR + SCALE_CALIBRATION_OFFSET; 
   Serial.println("External temperature is " + String(extTemp,3) + ", correcting W=" + String(weight, 3) + " by " + String(tempCorrection, 3) + "kg");
-  return weight + tempCorrection;
+  return weight;
 }
 
 
