@@ -46,6 +46,7 @@ void setup()
   delay(500);
   Serial.println("Serial port initialized.");
   pinMode(BATTERY_PIN, INPUT);
+  pinMode(D0, WAKEUP_PULLUP);
   turnOnPeripherals();
 
   // Wait 5 seconds, read sensors and publish results to LCD and/or web server
@@ -122,14 +123,6 @@ void turnOnPeripherals()
     lcd.setCursor(6,1);
     lcd.print(".");
   }
-
-  Serial.println("External temperature sensor initialization...");
-
-  if (LCD_SCREEN)
-  {
-    lcd.setCursor(7,1);
-    lcd.print(".");
-  }
   Serial.println("All sensors initialized!");
 }
 
@@ -169,8 +162,8 @@ float getTemp()
   float temp = dht.readTemperature();
   if (isnan(temp) || (temp < -30.0) || (temp > 60.0))
   {
-    Serial.println("DHT22 reading seems wrong!");
-    temp = 0.0;
+    Serial.println("DHT22 temperature reading seems wrong:" + String(temp));
+    temp = -127;
   }
   return temp;
 }
@@ -187,8 +180,8 @@ float getHumidity()
   float humidity = dht.readHumidity();
   if (isnan(humidity) || (humidity < 0.0) || (humidity > 100.0))
   {
-    Serial.println("DHT22 reading seems wrong!");
-    humidity = 0.0;
+    Serial.println("DHT22 humidity reading seems wrong:" + String(humidity));
+    humidity = -127;
   }
   return humidity;
 }
@@ -205,18 +198,17 @@ float getWeight(float extTemp)
     Serial.println("HX711 not found.");
     weight = 0.0;
   }
-  float tempCorrection;
   if(extTemp != -127)
   {
-    tempCorrection = -extTemp * 3630.7;
+    float tempCorrection = -extTemp * 3630.7;
+    weight = (channelA + tempCorrection) / SCALE_CALIBRATION_FACTOR + SCALE_CALIBRATION_OFFSET; 
   }
   else
   {
-    // Reading error, let's assume 15C
-    tempCorrection = -54460.5;
+    // Reading error, weight measure should not be used
+    weight = 0;
   }
-  weight = (channelA + tempCorrection) / SCALE_CALIBRATION_FACTOR + SCALE_CALIBRATION_OFFSET; 
-  Serial.println("External temperature is " + String(extTemp,3) + ", correcting W=" + String(weight, 3) + " by " + String(tempCorrection, 3) + "kg");
+  Serial.println("Weight: " + String(weight,3) + "kg (corrected for temp=" + String(extTemp, 3) + "C)");
   return weight;
 }
 
@@ -251,12 +243,12 @@ void webOut(float weight, float temp, float humidity, float voltage, float extTe
   String exttemp_url = "http://192.168.1.100:1974/store_hive_exttemp.php";
   String exttemp_data = "temp_sensor=" + String((float)extTemp, 3);
 
-  postReading(temperature_url, temperature_data);
-  postReading(humidity_url, humidity_data);
-  postReading(weight_url, weight_data);
+  if(temp != -127) postReading(temperature_url, temperature_data);
+  if(humidity != -127) postReading(humidity_url, humidity_data);
+  if(weight != 0) postReading(weight_url, weight_data); // Don't sent weight if it is invalid
   postReading(battery_url, battery_data);
   postReading(channela_url, channela_data);
-  postReading(exttemp_url, exttemp_data);
+  if(extTemp != -127) postReading(exttemp_url, exttemp_data);
 }
 
 void postReading(String url, String data)

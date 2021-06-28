@@ -1,6 +1,6 @@
 # BeeMon
 
-This is a cheap ESP8266 beehive monitoring system. The system is powered by a solar panel charging a 18650 battery.
+This is a cheap ESP8266 beehive monitoring system. The system is powered by a solar panel charging two 18650 batteries.
 
 ![alt text](setup.png "Weight sensor calibration")
 
@@ -25,7 +25,7 @@ KiCad schematics and some custom KiCad components are included.
 - DHT22 sensor
 - DS18B20 sensor
 - 6V / 2W solar panel
-- 18650 battery with corresponding holder
+- Two 18650 batteries with corresponding holders
 - TP4056 charge controller
 - HD44780 1602 2x 16 characters LCD with I2C adapter
 - 1x 4.7kΩ and 1x 10kΩ resistors
@@ -40,9 +40,9 @@ The total price of the system was around 45€. Buying several items at once in 
 
 The system can either be built on a breadboard or soldered on a small board. For long time use outdoor, a breadboard is probably not well-suited.
 
-Somehow, using the ESP8266 3V pins to power the HX711 and the DHT22 doesn't work, probably because the 18650 output is not sufficient. It's better to use the AMS117 3V output for this.
+Somehow, using the ESP8266 3V pins to power the HX711 and the DHT22 doesn't work. It's better to use the AMS117 3V output for this.
 
-The 18650 voltage is measured on the A0 pin. Either the voltage is too high for this, or it does not vary much with time, as it tends to stay on 4.4V. Adding a resistor between BAT+ and A0 may be better.
+The 18650s voltage is measured on the A0 pin. Either the voltage is too high for this, or it does not vary much with time, as it tends to stay on 4.380V. Adding a resistor between BAT+ and A0 may be better.
 
 The load cells are placed in a Wheatstone bridge configuration.
 
@@ -50,7 +50,7 @@ Once built, the system sends logs to the serial output via the ESP8266 USB port 
 
 ![alt text](board.png "Finished board")
 
-## Configuration
+## Software Configuration and Installation
 
 - Open beemon.ino using the Arduino IDE
 - In the Tools menu, set the board type according to the ESP8266 or Arduino model you are using.

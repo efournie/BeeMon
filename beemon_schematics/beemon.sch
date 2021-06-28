@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "BeeMon"
 Date "2021-04-13"
-Rev "1.1"
+Rev "2.0"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -135,7 +135,7 @@ F 3 "" H 2800 3700 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3850 3550 3150 3550
+	3850 3550 3450 3550
 Wire Wire Line
 	3150 3550 3150 3600
 Connection ~ 3850 3550
@@ -146,7 +146,7 @@ Wire Wire Line
 Wire Wire Line
 	3350 3800 3350 3850
 Wire Wire Line
-	3350 3850 3850 3850
+	3350 3850 3450 3850
 Wire Wire Line
 	3850 4850 5000 4850
 Connection ~ 3850 3850
@@ -251,10 +251,8 @@ NoConn ~ 5000 3850
 NoConn ~ 5000 3950
 NoConn ~ 5000 4050
 NoConn ~ 5000 4150
-NoConn ~ 5000 4250
 NoConn ~ 5000 4350
 NoConn ~ 5000 4450
-NoConn ~ 5000 4550
 NoConn ~ 5000 4650
 NoConn ~ 6600 3850
 NoConn ~ 6600 4550
@@ -271,12 +269,12 @@ Wire Wire Line
 $Comp
 L Switch:SW_SPST SW1
 U 1 1 607C3174
-P 4450 4300
-F 0 "SW1" V 4496 4212 50  0000 R CNN
-F 1 "SW_SPST" V 4405 4212 50  0000 R CNN
-F 2 "" H 4450 4300 50  0001 C CNN
-F 3 "~" H 4450 4300 50  0001 C CNN
-	1    4450 4300
+P 4000 4300
+F 0 "SW1" V 4046 4212 50  0000 R CNN
+F 1 "SW_SPST" V 3955 4212 50  0000 R CNN
+F 2 "" H 4000 4300 50  0001 C CNN
+F 3 "~" H 4000 4300 50  0001 C CNN
+	1    4000 4300
 	0    -1   -1   0   
 $EndComp
 NoConn ~ 5800 2000
@@ -368,15 +366,6 @@ Wire Wire Line
 Wire Wire Line
 	3850 3850 3850 4850
 Wire Wire Line
-	4850 4750 4450 4750
-Wire Wire Line
-	4450 4750 4450 4500
-Connection ~ 4850 4750
-Wire Wire Line
-	4450 4100 4450 3850
-Wire Wire Line
-	4450 3850 3850 3850
-Wire Wire Line
 	8550 4300 9550 4300
 NoConn ~ 8200 3700
 NoConn ~ 8200 3800
@@ -438,4 +427,50 @@ Wire Wire Line
 Connection ~ 7900 2500
 Wire Wire Line
 	7900 2500 7900 2050
+$Comp
+L SparkFun-Resistors:220KOHM-0603-1_10W-1% R3
+U 1 1 608C7991
+P 4500 4350
+F 0 "R3" V 4458 4418 45  0000 L CNN
+F 1 "220KOHM" V 4542 4418 45  0000 L CNN
+F 2 "0603" H 4500 4500 20  0001 C CNN
+F 3 "" H 4500 4350 60  0001 C CNN
+F 4 "" V 4584 4418 60  0000 L CNN "Field4"
+	1    4500 4350
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4850 4750 4000 4750
+Wire Wire Line
+	4000 4750 4000 4500
+Connection ~ 4850 4750
+Wire Wire Line
+	3850 3850 4000 3850
+Wire Wire Line
+	4000 3850 4000 4100
+Wire Wire Line
+	5000 4550 4500 4550
+Wire Wire Line
+	5000 4250 4800 4250
+Wire Wire Line
+	4800 4250 4800 4150
+Wire Wire Line
+	4800 4150 4500 4150
+$Comp
+L Device:Battery_Cell BT2
+U 1 1 608BE395
+P 3450 3750
+F 0 "BT2" V 3195 3800 50  0000 C CNN
+F 1 "Battery_Cell" V 3286 3800 50  0000 C CNN
+F 2 "" V 3450 3810 50  0001 C CNN
+F 3 "~" V 3450 3810 50  0001 C CNN
+	1    3450 3750
+	1    0    0    -1  
+$EndComp
+Connection ~ 3450 3550
+Wire Wire Line
+	3450 3550 3150 3550
+Connection ~ 3450 3850
+Wire Wire Line
+	3450 3850 3850 3850
 $EndSCHEMATC
