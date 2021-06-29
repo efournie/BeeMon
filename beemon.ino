@@ -7,8 +7,9 @@
 #include <OneWire.h>
 
 // Settings
-const int LCD_SCREEN = 1;
+const int LCD_SCREEN = 0;
 const int WEB_SERVER = 1;
+const int WEIGHT_SENSOR = 0;
 const int TEST_MODE = 0;
 const int DEEP_SLEEP_TIME_SEC = 600;
 const int WIFI_INIT_MAX_SEC = 15;
@@ -113,9 +114,12 @@ void turnOnPeripherals()
     lcd.setCursor(5,1);
     lcd.print(".");
   }
-  scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
-  scale.power_up();
-  delay(2000); // After first powerup, the HX711 seems to need more time before being able to read values...
+  if (WEIGHT_SENSOR)
+  {
+    scale.begin(SCALE_DOUT_PIN, SCALE_SCK_PIN);
+    scale.power_up();
+    delay(2000); // After first powerup, the HX711 seems to need more time before being able to read values...  
+  }
   Serial.println("Temperature and humidity sensor initialization...");
   dht.begin(); // initialize dht22
   if (LCD_SCREEN)
@@ -129,9 +133,12 @@ void turnOnPeripherals()
 void turnOffPeripherals()
 {
   Serial.println("Turning off peripherals and activating deep sleep for " + String(DEEP_SLEEP_TIME_SEC) + "seconds...");
-  lcd.setCursor(15, 1);
-  lcd.print("z");
-  scale.power_down();
+  if (LCD_SCREEN) 
+  {
+    lcd.setCursor(15, 1);
+    lcd.print("z");
+  }
+  if (WEIGHT_SENSOR) scale.power_down();
   Serial.flush();
   ESP.deepSleep(DEEP_SLEEP_TIME_SEC * 1e6, WAKE_RFCAL);
 }
@@ -188,6 +195,7 @@ float getHumidity()
   
 float getWeight(float extTemp)
 {
+  if (!WEIGHT_SENSOR) return 0;
   float weight;
   if (scale.is_ready()) 
   {
@@ -219,6 +227,7 @@ float getWeight(float extTemp)
 
 void lcdOut(float weight, float temp, float humidity, float voltage)
 {
+  if(!LCD_SCREEN) return;
   String line1=String(weight, 1) + "kg  " + String(temp, 1)+"C";
   String line2=String(humidity, 1) + "%  " + String(voltage, 2) + "V";
   clearLcd();
@@ -245,7 +254,7 @@ void webOut(float weight, float temp, float humidity, float voltage, float extTe
 
   if(temp != -127) postReading(temperature_url, temperature_data);
   if(humidity != -127) postReading(humidity_url, humidity_data);
-  if(weight != 0) postReading(weight_url, weight_data); // Don't sent weight if it is invalid
+  if(weight != 0 && WEIGHT_SENSOR) postReading(weight_url, weight_data); // Don't sent weight if it is invalid
   postReading(battery_url, battery_data);
   postReading(channela_url, channela_data);
   if(extTemp != -127) postReading(exttemp_url, exttemp_data);
